@@ -24,11 +24,11 @@ app:mainloop()
 ```
 
 
-## Build
+## Build and run sample
 
 * Windows
     ```powershell
-    make dist
+    build.cmd
     cd dist
     .\run-sample1.ps1
     ```
