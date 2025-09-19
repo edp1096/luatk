@@ -26,6 +26,11 @@ app:mainloop()
 
 ## Build and run sample
 
+* Prequisites
+    * Lua 5.4
+    * Tcl/Tk
+    * [MinGW](https://github.com/brechtsanders/winlibs_mingw)
+
 * Windows
     ```powershell
     build.cmd
