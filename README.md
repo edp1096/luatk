@@ -1,4 +1,4 @@
-Simply Tk support for Lua 5.4
+Simple Tk support for Lua 5.4
 
 
 ## Usage
