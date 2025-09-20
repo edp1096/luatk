@@ -1,88 +1,44 @@
 local tk = require("luatk")
 local app = tk.new()
-app:title("Pie Chart Example")
-app:geometry(600, 500)
+app:title("Bar Chart")
+app:geometry(600, 400)
 
-local canvas = app:canvas { width = 500, height = 450, bg = "white" }
-canvas:pack { padx = 10, pady = 10 }
+local canvas = app:canvas{width = 500, height = 350, bg = "white"}
+canvas:pack{padx = 10, pady = 10}
 
--- Pie chart data
-local pie_data = { 30, 25, 20, 15, 10 }
-local pie_labels = { "Category A", "Category B", "Category C", "Category D", "Category E" }
-local pie_colors = { "red", "blue", "green", "orange", "purple" }
+-- Graph settings
+local margin_left = 80
+local margin_bottom = 50
+local margin_top = 30
+local margin_right = 30
+local graph_width = 500 - margin_left - margin_right
+local graph_height = 350 - margin_top - margin_bottom
 
--- Chart settings
-local center_x = 200
-local center_y = 200
-local radius = 120
+-- Draw axes
+canvas:create_line(margin_left, 350-margin_bottom, 500-margin_right, 350-margin_bottom, {width = 2})
+canvas:create_line(margin_left, margin_top, margin_left, 350-margin_bottom, {width = 2})
 
--- Calculate total for percentage calculation
-local total = 0
-for _, value in ipairs(pie_data) do
-    total = total + value
+-- Data for bar chart
+local data = {20, 45, 70, 55, 85, 60, 95}
+local labels = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"}
+local colors = {"red", "blue", "green", "orange", "purple", "brown", "pink"}
+
+local bar_width = graph_width / #data * 0.8
+local bar_spacing = graph_width / #data
+
+for i, value in ipairs(data) do
+    local x = margin_left + (i-1) * bar_spacing + bar_spacing * 0.1
+    local y = 350 - margin_bottom
+    local height = (value / 100) * graph_height
+    
+    -- Draw bar
+    canvas:create_rectangle(x, y - height, x + bar_width, y, {fill = colors[i], outline = "black"})
+    
+    -- Value label on top of bar
+    canvas:create_text(x + bar_width/2, y - height - 5, tostring(value), {anchor = "s"})
+    
+    -- X-axis label
+    canvas:create_text(x + bar_width/2, y + 15, labels[i], {anchor = "n"})
 end
-
--- Draw pie chart
-local start_angle = 0
-for i, value in ipairs(pie_data) do
-    local angle = (value / total) * 360
-    local end_angle = start_angle + angle
-
-    -- Approximate sectors with triangles
-    local steps = math.max(8, math.floor(angle / 5))
-    for step = 0, steps - 1 do
-        local a1 = math.rad(start_angle + step * angle / steps)
-        local a2 = math.rad(start_angle + (step + 1) * angle / steps)
-
-        local x1 = center_x + radius * math.cos(a1)
-        local y1 = center_y + radius * math.sin(a1)
-        local x2 = center_x + radius * math.cos(a2)
-        local y2 = center_y + radius * math.sin(a2)
-
-        canvas:create_polygon(center_x, center_y, x1, y1, x2, y2, { fill = pie_colors[i], outline = pie_colors[i], width = 1 })
-    end
-
-    -- Draw labels outside the pie
-    local label_angle = math.rad(start_angle + angle / 2)
-    local label_x = center_x + (radius + 30) * math.cos(label_angle)
-    local label_y = center_y + (radius + 30) * math.sin(label_angle)
-
-    -- Label text with percentage
-    local percentage = math.floor((value / total) * 100 + 0.5)
-    local label_text = pie_labels[i] .. "\n" .. percentage .. "%"
-    canvas:create_text(label_x, label_y, label_text, { anchor = "center", font = "Arial 10" })
-
-    -- Draw line from pie to label
-    local line_start_x = center_x + radius * math.cos(label_angle)
-    local line_start_y = center_y + radius * math.sin(label_angle)
-    local line_end_x = center_x + (radius + 20) * math.cos(label_angle)
-    local line_end_y = center_y + (radius + 20) * math.sin(label_angle)
-    canvas:create_line(line_start_x, line_start_y, line_end_x, line_end_y, { width = 1, fill = "gray" })
-
-    start_angle = end_angle
-end
-
--- Draw title
-canvas:create_text(center_x, 50, "Sales by Category", { font = "Arial 16 bold", anchor = "center" })
-
--- Draw legend
-local legend_x = 400
-local legend_y = 120
-canvas:create_text(legend_x, legend_y - 20, "Legend:", { font = "Arial 12 bold", anchor = "w" })
-
-for i, label in ipairs(pie_labels) do
-    local y = legend_y + (i - 1) * 25
-
-    -- Color box
-    canvas:create_rectangle(legend_x, y - 8, legend_x + 15, y + 8, { fill = pie_colors[i], outline = "black" })
-
-    -- Label text
-    local percentage = math.floor((pie_data[i] / total) * 100 + 0.5)
-    canvas:create_text(legend_x + 20, y, label .. " (" .. percentage .. "%)", { anchor = "w", font = "Arial 10" })
-end
-
--- Draw border around pie chart
-canvas:create_oval(center_x - radius - 5, center_y - radius - 5,
-    center_x + radius + 5, center_y + radius + 5, { outline = "black", width = 2 })
 
 app:mainloop()

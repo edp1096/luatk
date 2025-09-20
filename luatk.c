@@ -517,6 +517,57 @@ static int luatk_widget_create_text(lua_State *L) {
     return 0;
 }
 
+// Text widget methods (Entry, Text widgets)
+static int luatk_widget_get(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "%s get", widget->widget_path);
+
+    if (Tcl_Eval(widget->app->interp, cmd) == TCL_OK) {
+        const char *result = Tcl_GetStringResult(widget->app->interp);
+        lua_pushstring(L, result);
+        return 1;
+    }
+
+    lua_pushnil(L);
+    return 1;
+}
+
+static int luatk_widget_insert(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+    const char *index = luaL_checkstring(L, 2);  // "end", "0", etc.
+    const char *text = luaL_checkstring(L, 3);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "%s insert %s {%s}", widget->widget_path, index, text);
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Insert error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
+static int luatk_widget_delete(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+    const char *first = luaL_checkstring(L, 2);   // start index
+    const char *last = luaL_optstring(L, 3, "");  // end index (optional)
+
+    char cmd[256];
+    if (strlen(last) > 0) {
+        snprintf(cmd, sizeof(cmd), "%s delete %s %s", widget->widget_path, first, last);
+    } else {
+        snprintf(cmd, sizeof(cmd), "%s delete %s", widget->widget_path, first);
+    }
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Delete error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
 static int luatk_widget_destroy(lua_State *L) {
     LuaTkWidget *widget = luatk_checkwidget(L, 1);
 
@@ -557,6 +608,7 @@ static const luaL_Reg app_methods[] = {
     {"spinbox", luatk_app_spinbox},
     {"panedwindow", luatk_app_panedwindow},
     {"labelframe", luatk_app_labelframe},
+
     // Ttk widgets
     {"ttk_button", luatk_app_ttk_button},
     {"ttk_label", luatk_app_ttk_label},
@@ -567,6 +619,7 @@ static const luaL_Reg app_methods[] = {
     {"ttk_treeview", luatk_app_ttk_treeview},
     {"ttk_separator", luatk_app_ttk_separator},
     {"ttk_sizegrip", luatk_app_ttk_sizegrip},
+
     {"__gc", luatk_app_destroy},
     {NULL, NULL}};
 
@@ -576,12 +629,19 @@ static const luaL_Reg widget_methods[] = {
     {"place", luatk_widget_place},
     {"configure", luatk_widget_configure},
     {"destroy", luatk_widget_destroy},
+
     // Canvas methods
     {"create_line", luatk_widget_create_line},
     {"create_oval", luatk_widget_create_oval},
     {"create_rectangle", luatk_widget_create_rectangle},
     {"create_polygon", luatk_widget_create_polygon},
     {"create_text", luatk_widget_create_text},
+
+    // Text widget methods
+    {"get", luatk_widget_get},
+    {"insert", luatk_widget_insert},
+    {"delete", luatk_widget_delete},
+
     {"__gc", luatk_widget_destroy},
     {NULL, NULL}};
 
