@@ -9,13 +9,13 @@ local tk = require("luatk")
 
 local app = tk.new()
 app:title("My App")
-app:geometry(400, 300)
+app:geometry(200, 100)
 
 local button = app:button{
     text = "Click Me!",
     command = function(widget)
         print("Button clicked!")
-        widget:configure{text = "Clicked!"}
+        widget:configure{text = "Clicked!", bg = "lightgreen"}
     end
 }
 button:pack{padx = 10, pady = 10}
