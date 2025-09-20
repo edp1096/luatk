@@ -57,18 +57,20 @@ static char *generate_widget_path(LuaTkApp *app, const char *type) {
 
 // Callback command handler
 static int callback_command(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-    (void)interp; (void)objc; (void)objv;  // Silence warnings
-    
+    (void)interp;
+    (void)objc;
+    (void)objv;  // Silence warnings
+
     LuaTkWidget *widget = (LuaTkWidget *)clientData;
     lua_State *L = widget->app->L;
 
     if (widget->callback_ref != LUA_NOREF) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, widget->callback_ref);  // Push callback function
-        
+
         if (lua_isfunction(L, -1)) {
             // Push widget as first parameter
             lua_rawgeti(L, LUA_REGISTRYINDEX, widget->self_ref);
-            
+
             // Call function with widget as parameter
             if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
                 printf("Callback error: %s\n", lua_tostring(L, -1));
@@ -219,7 +221,7 @@ static int luatk_create_widget(lua_State *L, const char *widget_type) {
     widget->self_ref = LUA_NOREF;
 
     // Store reference to widget itself for callbacks
-    lua_pushvalue(L, -1);  // Duplicate widget userdata on stack
+    lua_pushvalue(L, -1);                               // Duplicate widget userdata on stack
     widget->self_ref = luaL_ref(L, LUA_REGISTRYINDEX);  // Store reference and pop
 
     // Build Tk command
@@ -400,6 +402,121 @@ static int luatk_widget_configure(lua_State *L) {
     return 0;
 }
 
+// Canvas drawing methods
+static int luatk_widget_create_line(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+    int x1 = (int)luaL_checknumber(L, 2);  // luaL_checknumber 사용 후 int로 캐스팅
+    int y1 = (int)luaL_checknumber(L, 3);
+    int x2 = (int)luaL_checknumber(L, 4);
+    int y2 = (int)luaL_checknumber(L, 5);
+
+    char options[512];
+    parse_options(L, 6, options, sizeof(options), NULL);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "%s create line %d %d %d %d%s",
+             widget->widget_path, x1, y1, x2, y2, options);
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Canvas line error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
+static int luatk_widget_create_oval(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+    int x1 = (int)luaL_checknumber(L, 2);
+    int y1 = (int)luaL_checknumber(L, 3);
+    int x2 = (int)luaL_checknumber(L, 4);
+    int y2 = (int)luaL_checknumber(L, 5);
+
+    char options[512];
+    parse_options(L, 6, options, sizeof(options), NULL);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "%s create oval %d %d %d %d%s",
+             widget->widget_path, x1, y1, x2, y2, options);
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Canvas oval error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
+static int luatk_widget_create_rectangle(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+    int x1 = luaL_checknumber(L, 2);
+    int y1 = luaL_checknumber(L, 3);
+    int x2 = luaL_checknumber(L, 4);
+    int y2 = luaL_checknumber(L, 5);
+
+    char options[512];
+    parse_options(L, 6, options, sizeof(options), NULL);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "%s create rectangle %d %d %d %d%s",
+             widget->widget_path, x1, y1, x2, y2, options);
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Canvas rectangle error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
+static int luatk_widget_create_polygon(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+
+    // Receives coordinates of points (variable arguments)
+    int argc = lua_gettop(L);
+    char coords[1024] = "";
+
+    for (int i = 2; i < argc; i += 2) {
+        if (i + 1 <= argc) {
+            int x = (int)luaL_checknumber(L, i);
+            int y = (int)luaL_checknumber(L, i + 1);
+            char coord[32];
+            snprintf(coord, sizeof(coord), "%d %d ", x, y);
+            strcat(coords, coord);
+        }
+    }
+
+    char options[512];
+    parse_options(L, argc, options, sizeof(options), NULL);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "%s create polygon %s%s",
+             widget->widget_path, coords, options);
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Canvas polygon error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
+static int luatk_widget_create_text(lua_State *L) {
+    LuaTkWidget *widget = luatk_checkwidget(L, 1);
+    int x = (int)luaL_checknumber(L, 2);
+    int y = (int)luaL_checknumber(L, 3);
+    const char *text = luaL_checkstring(L, 4);
+
+    char options[512];
+    parse_options(L, 5, options, sizeof(options), NULL);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "%s create text %d %d -text {%s}%s",
+             widget->widget_path, x, y, text, options);
+
+    if (Tcl_Eval(widget->app->interp, cmd) != TCL_OK) {
+        printf("Canvas text error: %s\n", Tcl_GetStringResult(widget->app->interp));
+    }
+
+    return 0;
+}
+
 static int luatk_widget_destroy(lua_State *L) {
     LuaTkWidget *widget = luatk_checkwidget(L, 1);
 
@@ -459,6 +576,12 @@ static const luaL_Reg widget_methods[] = {
     {"place", luatk_widget_place},
     {"configure", luatk_widget_configure},
     {"destroy", luatk_widget_destroy},
+    // Canvas methods
+    {"create_line", luatk_widget_create_line},
+    {"create_oval", luatk_widget_create_oval},
+    {"create_rectangle", luatk_widget_create_rectangle},
+    {"create_polygon", luatk_widget_create_polygon},
+    {"create_text", luatk_widget_create_text},
     {"__gc", luatk_widget_destroy},
     {NULL, NULL}};
 

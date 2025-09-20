@@ -27,14 +27,13 @@ echo Copying Lua executable...
 copy lua\bin\lua.exe dist\ >nul
 
 echo Copying Tcl/Tk libraries...
-xcopy tcltk\lib\tcl9 dist\lib\tcl9\ /E /I /Y /Q 2>nul
+@REM xcopy tcltk\lib\tcl9 dist\lib\tcl9\ /E /I /Y /Q 2>nul
 xcopy tcltk\lib\tcl9.0 dist\lib\tcl9.0\ /E /I /Y /Q >nul
 xcopy tcltk\lib\tk9.0 dist\lib\tk9.0\ /E /I /Y /Q >nul
 
 echo Copying sample scripts...
 mkdir dist\samples 2>nul
-copy samples\sample_1.lua dist\samples\ >nul 2>nul
-copy samples\sample_2.lua dist\samples\ >nul 2>nul
+copy samples\sample*.lua dist\samples\ >nul 2>nul
 
 echo Creating launcher script...
 (
@@ -70,14 +69,6 @@ echo set LUA_CPATH=%%~dp0?.dll;%%LUA_CPATH%%
 echo %%~dp0lua.exe samples\sample_1.lua
 ) > dist\run-sample1.bat
 
-(
-echo @echo off
-echo set TCL_LIBRARY=%%~dp0lib\tcl9.0
-echo set TK_LIBRARY=%%~dp0lib\tk9.0
-echo set LUA_CPATH=%%~dp0?.dll;%%LUA_CPATH%%
-echo %%~dp0lua.exe samples\sample_2.lua
-) > dist\run-sample2.bat
-
 echo Creating README...
 (
 echo LuaTk Distribution
@@ -95,16 +86,13 @@ echo   samples/             - Example scripts
 echo.
 echo Sample Scripts:
 echo   samples/sample_1.lua - Simple test
-echo   samples/sample_2.lua - Comprehensive demo
 echo.
 echo Usage:
 echo   run-luatk.bat script.lua    - Run any Lua script with LuaTk
 echo   run-sample1.bat              - Run simple sample
-echo   run-sample2.bat              - Run comprehensive demo
 echo.
 echo Examples:
 echo   run-luatk.bat samples\sample_1.lua
-echo   run-luatk.bat samples\sample_2.lua
 echo   run-luatk.bat your-app.lua
 echo.
 echo Requirements:
@@ -127,10 +115,6 @@ echo.
 echo Quick Test:
 echo   cd dist
 echo   run-sample1.bat
-echo.
-echo Full Demo:
-echo   cd dist  
-echo   run-sample2.bat
 echo.
 echo Custom Scripts:
 echo   cd dist

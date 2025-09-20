@@ -48,7 +48,7 @@ ifeq ($(OS),Windows_NT)
 	@copy $(TCLTK_DIR)\bin\*.dll dist\ >nul 2>nul
 	@copy $(LUA_DIR)\bin\*.dll dist\ >nul 2>nul
 	@copy $(LUA_DIR)\bin\lua$(EXE_EXT) dist\ >nul
-	@xcopy $(TCLTK_DIR)\lib\tcl9 dist\lib\tcl9\ /E /I /Y /Q >nul 2>nul
+# 	@xcopy $(TCLTK_DIR)\lib\tcl9 dist\lib\tcl9\ /E /I /Y /Q >nul 2>nul
 	@xcopy $(TCLTK_DIR)\lib\tcl9.0 dist\lib\tcl9.0\ /E /I /Y /Q >nul 2>nul
 	@xcopy $(TCLTK_DIR)\lib\tk9.0 dist\lib\tk9.0\ /E /I /Y /Q >nul 2>nul
 	@copy samples\*.lua dist\samples\ >nul 2>nul
@@ -78,11 +78,6 @@ ifeq ($(OS),Windows_NT)
 	@echo set TK_LIBRARY=%%~dp0lib\tk9.0>> dist\run-sample1.bat
 	@echo set LUA_CPATH=%%~dp0?.dll;%%LUA_CPATH%%>> dist\run-sample1.bat
 	@echo %%~dp0lua.exe samples\sample_1.lua>> dist\run-sample1.bat
-	@echo @echo off> dist\run-sample2.bat
-	@echo set TCL_LIBRARY=%%~dp0lib\tcl9.0>> dist\run-sample2.bat
-	@echo set TK_LIBRARY=%%~dp0lib\tk9.0>> dist\run-sample2.bat
-	@echo set LUA_CPATH=%%~dp0?.dll;%%LUA_CPATH%%>> dist\run-sample2.bat
-	@echo %%~dp0lua.exe samples\sample_2.lua>> dist\run-sample2.bat
 	@echo LuaTk Distribution> dist\README.txt
 	@echo ==================>> dist\README.txt
 	@echo.>> dist\README.txt
@@ -90,7 +85,6 @@ ifeq ($(OS),Windows_NT)
 	@echo.>> dist\README.txt
 	@echo Usage:>> dist\README.txt
 	@echo   run-sample1.bat - Simple test>> dist\README.txt
-	@echo   run-sample2.bat - Comprehensive demo>> dist\README.txt
 	@echo   run-luatk.bat script.lua - Run custom script>> dist\README.txt
 	@del $(OUTPUT) >nul 2>nul
 	@echo Windows distribution complete: dist/
@@ -111,10 +105,6 @@ else
 	@echo 'export LUA_CPATH="$$(dirname "$$0")/?.so:$$LUA_CPATH"' >> dist/run-sample1.sh
 	@echo 'lua samples/sample_1.lua' >> dist/run-sample1.sh
 	@chmod +x dist/run-sample1.sh
-	@echo '#!/bin/bash' > dist/run-sample2.sh
-	@echo 'export LUA_CPATH="$$(dirname "$$0")/?.so:$$LUA_CPATH"' >> dist/run-sample2.sh
-	@echo 'lua samples/sample_2.lua' >> dist/run-sample2.sh
-	@chmod +x dist/run-sample2.sh
 	@echo 'LuaTk Distribution for Linux' > dist/README.txt
 	@echo '============================' >> dist/README.txt
 	@echo '' >> dist/README.txt
@@ -124,7 +114,6 @@ else
 	@echo '' >> dist/README.txt
 	@echo 'Usage:' >> dist/README.txt
 	@echo '  ./run-sample1.sh     - Simple test' >> dist/README.txt
-	@echo '  ./run-sample2.sh     - Comprehensive demo' >> dist/README.txt
 	@echo '  ./run-luatk.sh script.lua - Run custom script' >> dist/README.txt
 	@echo '' >> dist/README.txt
 	@echo 'Note: Uses system-installed Tcl/Tk and Lua libraries.' >> dist/README.txt

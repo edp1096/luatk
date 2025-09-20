@@ -8,13 +8,13 @@ if "%1"=="" (
     echo Usage: run-luatk.bat script.lua
     echo Example: run-luatk.bat test.lua
     pause
-    exit /b 
+    exit /b 1
 )
 
 if not exist "%1" (
     echo Error: Script '%1' not found
     pause
-    exit /b 
+    exit /b 1
 )
 
 echo Running: %1
